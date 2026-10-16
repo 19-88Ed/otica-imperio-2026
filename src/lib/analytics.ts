@@ -7,6 +7,7 @@ export type AnalyticsEvent =
   | "virtual_page_view";
 
 export type AnalyticsParams = Record<string, string | number | boolean | undefined>;
+export const OPEN_CONSENT_EVENT = "otica:open-consent";
 
 declare global {
   interface Window {
@@ -24,6 +25,12 @@ export function trackEvent(event: AnalyticsEvent, params: AnalyticsParams = {}) 
 
   window.dataLayer = window.dataLayer || [];
   window.dataLayer.push({ event, ...params });
+}
+
+export function openConsentPreferences() {
+  if (typeof window !== "undefined") {
+    window.dispatchEvent(new Event(OPEN_CONSENT_EVENT));
+  }
 }
 
 export function identifyStore(href: string, declaredStore?: string) {
@@ -47,4 +54,3 @@ export function safeLinkUrl(href: string) {
     return href.split("?")[0] ?? href;
   }
 }
-

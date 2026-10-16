@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { OPEN_CONSENT_EVENT } from "@/lib/analytics";
 
 const CONSENT_KEY = "otica_imperio_consent_v1";
 type ConsentChoice = "granted" | "denied";
@@ -14,19 +15,34 @@ function updateConsent(choice: ConsentChoice) {
   });
   window.dataLayer = window.dataLayer || [];
   window.dataLayer.push({ event: "consent_update", consent_choice: choice });
-  localStorage.setItem(CONSENT_KEY, choice);
+  try {
+    localStorage.setItem(CONSENT_KEY, choice);
+  } catch {
+    // O consentimento continua válido para esta página mesmo sem armazenamento local.
+  }
 }
 
 export function ConsentBanner() {
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
-    const saved = localStorage.getItem(CONSENT_KEY) as ConsentChoice | null;
+    const openPreferences = () => setVisible(true);
+    window.addEventListener(OPEN_CONSENT_EVENT, openPreferences);
+
+    let saved: ConsentChoice | null = null;
+    try {
+      saved = localStorage.getItem(CONSENT_KEY) as ConsentChoice | null;
+    } catch {
+      // Alguns navegadores bloqueiam o armazenamento; nesse caso, perguntamos novamente.
+    }
+
     if (saved) {
       updateConsent(saved);
     } else {
       setVisible(true);
     }
+
+    return () => window.removeEventListener(OPEN_CONSENT_EVENT, openPreferences);
   }, []);
 
   if (!visible) return null;
@@ -71,4 +87,3 @@ export function ConsentBanner() {
     </aside>
   );
 }
-

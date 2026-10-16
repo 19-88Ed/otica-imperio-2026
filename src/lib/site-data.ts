@@ -310,4 +310,3 @@ export const FAQ = [
     a: "Não. O teste online é uma ferramenta educativa e orientativa. Ele não é diagnóstico e não substitui a avaliação de um profissional na loja.",
   },
 ];
-
